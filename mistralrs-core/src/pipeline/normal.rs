@@ -504,7 +504,7 @@ impl Pipeline for NormalPipeline {
         sample_and_add_toks(self, seqs, logits, prefix_cacher, disable_eos_stop, rng).await
     }
     fn category(&self) -> ModelCategory {
-        ModelCategory::Text
+        ModelCategory::AutoRegressive
     }
 }
 

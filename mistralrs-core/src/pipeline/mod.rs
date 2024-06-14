@@ -11,6 +11,8 @@ mod normal_loaders;
 mod paths;
 mod processing;
 mod sampling;
+mod seq2seq;
+mod seq2seq_loaders;
 mod speculative;
 mod vision;
 mod vision_loaders;
@@ -42,6 +44,7 @@ pub(crate) use processing::{
     apply_chat_template, BasicProcessor, MessagesAction, Processor, ProcessorCreator,
 };
 use rand_isaac::Isaac64Rng;
+pub use seq2seq_loaders::{Seq2SeqLoaderType, Seq2SeqModelLoader, T5Loader};
 pub use speculative::{SpeculativeConfig, SpeculativeLoader, SpeculativePipeline};
 use std::any::Any;
 use std::fmt::Debug;
@@ -560,7 +563,8 @@ pub trait AnyMoePipelineMixin {
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum ModelCategory {
-    Text,
+    AutoRegressive,
+    Seq2Seq,
     Vision { has_conv2d: bool },
 }
 
@@ -827,6 +831,20 @@ pub trait VisionModel: IsqModel + AnyMoeBaseModelMixin {
     fn max_seq_len(&self) -> usize;
     fn has_conv2d(&self) -> bool;
     fn config(&self) -> &ModelConfigMetadata;
+}
+
+pub trait Seq2SeqModel: IsqModel {
+    // Called for each generation step
+    fn forward_decode(
+        &mut self,
+        input_ids: &Tensor,
+        encoder_hidden_states: &Tensor,
+    ) -> candle_core::Result<Tensor>;
+    // Called on the prompt once. Outputs encoder_hidden_states which are fed into `forward_decode`
+    fn forward_encode(&mut self, prompt_input_ids: &Tensor) -> candle_core::Result<Tensor>;
+    fn device(&self) -> &Device;
+    fn cache(&self) -> &Cache;
+    fn max_seq_len(&self) -> usize;
 }
 
 pub(crate) fn extract_logits(

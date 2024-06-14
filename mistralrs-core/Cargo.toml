@@ -73,6 +73,7 @@ plotly = { version = "0.9.0", features = ["kaleido"], optional = true }
 mistralrs-paged-attn = { version = "0.2.4", path = "../mistralrs-paged-attn", optional = true }
 uuid = { version = "1.10.0", features = ["v4"] }
 schemars = "0.8.21"
+serde_plain = "1.0.2"
 
 [features]
 default = ["plotly"]
